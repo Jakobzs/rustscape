@@ -19,9 +19,9 @@ fn main() {
     loop {
         println!("Game loop!");
 
-        input();
-        update();
-        render();
+        input(&lua);
+        update(&lua);
+        render(&lua);
     }
 }
 
@@ -35,8 +35,8 @@ fn setup() -> World {
     world
 }
 
-fn input() {}
+fn input(lua: &Lua) {}
 
-fn update() {}
+fn update(lua: &Lua) {}
 
-fn render() {}
+fn render(lua: &Lua) {}
