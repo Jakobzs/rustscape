@@ -2,6 +2,8 @@ fn main() {
     setup();
 
     loop {
+        println!("Game loop!");
+
         input();
         update();
         render();
