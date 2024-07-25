@@ -1,17 +1,10 @@
 use mlua::Lua;
+use std::{
+    cmp, thread,
+    time::{Duration, Instant},
+};
 
-struct Player {
-    name: String,
-}
-
-struct World {
-    name: String,
-    players: Vec<Player>,
-}
-
-fn tokio_lets_gooo() {
-    println!("Tokio lets go!");
-}
+const TICK_RATE: i128 = 600;
 
 // The main thread is considered the game thread. Therefore main is not async
 fn main() {
@@ -22,20 +15,39 @@ fn main() {
     lua.set_app_data(world);
 
     // Create thread that spawns the tokio runtime and runs stuff
-    std::thread::spawn(|| {
+    thread::spawn(|| {
         tokio::runtime::Runtime::new().unwrap().block_on(async {
             // Run the game loop
-            tokio_lets_gooo();
+            init_tokio().await;
         });
     });
 
     loop {
-        //println!("Game loop!");
+        let start_time = Instant::now();
 
         input(&lua);
         update(&lua);
         render(&lua);
+
+        let elapsed_time = start_time.elapsed();
+        let sleep_time = cmp::max(TICK_RATE - elapsed_time.as_millis() as i128, 0) as u64;
+
+        // Sleep until the next tick
+        thread::sleep(Duration::from_millis(sleep_time));
     }
+}
+
+struct Player {
+    name: String,
+}
+
+struct World {
+    name: String,
+    players: Vec<Player>,
+}
+
+async fn init_tokio() {
+    println!("Tokio here");
 }
 
 fn setup() -> World {
