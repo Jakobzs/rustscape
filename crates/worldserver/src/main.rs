@@ -9,6 +9,11 @@ struct World {
     players: Vec<Player>,
 }
 
+fn tokio_lets_gooo() {
+    println!("Tokio lets go!");
+}
+
+// The main thread is considered the game thread. Therefore main is not async
 fn main() {
     let world = setup();
 
@@ -16,8 +21,16 @@ fn main() {
     let lua = Lua::new();
     lua.set_app_data(world);
 
+    // Create thread that spawns the tokio runtime and runs stuff
+    std::thread::spawn(|| {
+        tokio::runtime::Runtime::new().unwrap().block_on(async {
+            // Run the game loop
+            tokio_lets_gooo();
+        });
+    });
+
     loop {
-        println!("Game loop!");
+        //println!("Game loop!");
 
         input(&lua);
         update(&lua);
