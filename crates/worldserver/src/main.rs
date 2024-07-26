@@ -5,6 +5,7 @@ use std::{
     time::{Duration, Instant},
 };
 
+mod config;
 mod input;
 mod render;
 mod setup;
