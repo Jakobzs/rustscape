@@ -15,7 +15,7 @@ const TICK_RATE: i128 = 600;
 
 // The main thread is considered the game thread. Therefore main is not async
 fn main() {
-    let world = setup();
+    let world = setup(223);
 
     // Create mlua lua state
     let lua = Lua::new();

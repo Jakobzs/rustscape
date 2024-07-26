@@ -5,7 +5,7 @@ use tracing::info;
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{fmt, layer::SubscriberExt, Registry};
 
-pub fn setup() -> Result<World> {
+pub fn setup(revision: i32) -> Result<World> {
     let (_guard1, _guard2) = setup_logging()?;
 
     let world = World {
