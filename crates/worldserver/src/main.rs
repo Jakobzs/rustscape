@@ -1,4 +1,4 @@
-use crate::setup::setup;
+use crate::{input::input, render::render, setup::setup, update::update};
 use mlua::Lua;
 use std::{
     cmp, thread,
@@ -20,7 +20,7 @@ fn main() {
     let lua = Lua::new();
     lua.set_app_data(world);
 
-    // Create thread that spawns the tokio runtime and runs stuff
+    // Create thread that spawns the tokio runtime and accepts connections
     thread::spawn(|| {
         tokio::runtime::Runtime::new().unwrap().block_on(async {
             // Run the game loop
@@ -62,9 +62,3 @@ pub struct World {
 async fn init_tokio() {
     println!("Tokio here");
 }
-
-fn input(lua: &Lua) {}
-
-fn update(lua: &Lua) {}
-
-fn render(lua: &Lua) {}
