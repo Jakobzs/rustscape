@@ -1,8 +1,14 @@
+use crate::setup::setup;
 use mlua::Lua;
 use std::{
     cmp, thread,
     time::{Duration, Instant},
 };
+
+mod input;
+mod render;
+mod setup;
+mod update;
 
 const TICK_RATE: i128 = 600;
 
@@ -37,27 +43,17 @@ fn main() {
     }
 }
 
-struct Player {
+pub struct Player {
     name: String,
 }
 
-struct World {
+pub struct World {
     name: String,
     players: Vec<Player>,
 }
 
 async fn init_tokio() {
     println!("Tokio here");
-}
-
-fn setup() -> World {
-    let world = World {
-        name: "World".to_string(),
-        players: vec![Player {
-            name: "Player".to_string(),
-        }],
-    };
-    world
 }
 
 fn input(lua: &Lua) {}
