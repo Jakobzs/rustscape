@@ -1,4 +1,5 @@
 use crate::{input::input, render::render, setup::setup, update::update};
+use anyhow::Result;
 use mlua::Lua;
 use std::{
     cmp, thread,
@@ -13,9 +14,9 @@ mod update;
 
 const TICK_RATE: i128 = 600;
 
-// The main thread is considered the game thread. Therefore main is not async
-fn main() {
-    let world = setup(223);
+// The main thread is considered the game thread. Therefore, main is not async
+fn main() -> Result<()> {
+    let world = setup(223)?;
 
     // Create mlua lua state
     let lua = Lua::new();
@@ -48,6 +49,8 @@ fn main() {
         // Sleep until the next tick
         thread::sleep(Duration::from_millis(sleep_time));
     }
+
+    Ok(())
 }
 
 pub struct Player {
