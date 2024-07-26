@@ -38,6 +38,12 @@ fn main() {
         let elapsed_time = start_time.elapsed();
         let sleep_time = cmp::max(TICK_RATE - elapsed_time.as_millis() as i128, 0) as u64;
 
+        if lua.app_data_ref::<World>().unwrap().should_shutdown {
+            break;
+        }
+
+        println!("Tick took: {}ms", elapsed_time.as_millis());
+
         // Sleep until the next tick
         thread::sleep(Duration::from_millis(sleep_time));
     }
@@ -50,6 +56,7 @@ pub struct Player {
 pub struct World {
     name: String,
     players: Vec<Player>,
+    should_shutdown: bool,
 }
 
 async fn init_tokio() {

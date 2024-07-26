@@ -6,6 +6,7 @@ pub fn setup() -> World {
         players: vec![Player {
             name: "Player".to_string(),
         }],
+        should_shutdown: false,
     };
     world
 }
