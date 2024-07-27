@@ -37,6 +37,9 @@ fn main() -> Result<()> {
     let mut cache_checksum = Cache::open("cache")?;
     let checksum_table = ChecksumTable::create(cache_checksum.store)?;
 
+    let data = checksum_table.write()?;
+    info!("Checksum data: {:?}", data);
+
     // Prepare for socket connections
     setup_login_acceptor(223, &login_queue)?;
     info!("Ready to accept connections");
