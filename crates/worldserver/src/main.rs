@@ -3,6 +3,7 @@ use anyhow::Result;
 use crossbeam::queue::SegQueue;
 use mlua::Lua;
 use network::setup_login_acceptor;
+use rs2cache::{checksumtable::ChecksumTable, Cache};
 use std::{
     cmp,
     sync::{Arc, RwLock},
@@ -31,6 +32,10 @@ pub struct LoginRequest {
 // The main thread is considered the game thread. Therefore, main is not async
 fn main() -> Result<()> {
     let (mut lua, login_queue, _guard1, _guard2) = setup(223)?;
+
+    // TODO: &store for rs2cache checksumtable, update the dep...
+    let mut cache_checksum = Cache::open("cache")?;
+    let checksum_table = ChecksumTable::create(cache_checksum.store)?;
 
     // Prepare for socket connections
     setup_login_acceptor(223, &login_queue)?;
