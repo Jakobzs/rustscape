@@ -1,7 +1,8 @@
 use crate::LoginRequest;
 use anyhow::Result;
+use axum::{routing::get, Router};
 use crossbeam::queue::SegQueue;
-use std::{sync::Arc, thread};
+use std::{fs, net::SocketAddr, sync::Arc, thread};
 use tokio::{io::AsyncReadExt, net::TcpListener};
 
 mod js5;
@@ -23,6 +24,8 @@ pub fn setup_login_acceptor(
 
     thread::spawn(move || {
         tokio::runtime::Runtime::new().unwrap().block_on(async {
+            setup_ws_server().unwrap();
+
             accept_login_sockets(revision, &login_queue).await.unwrap();
         });
     });
@@ -72,4 +75,28 @@ async fn accept_login_sockets(
             }
         });
     }
+}
+
+fn setup_ws_server() -> Result<()> {
+    tokio::spawn(async {
+        let app = Router::new()
+            .route("/jav_config.ws", get(jav_config))
+            .route("/world_list.ws", get(world_list));
+
+        let addr = SocketAddr::from(([127, 0, 0, 1], 80));
+        axum::Server::bind(&addr)
+            .serve(app.into_make_service())
+            .await
+            .unwrap();
+    });
+
+    Ok(())
+}
+
+async fn jav_config() -> String {
+    fs::read_to_string("jav_config.ws").expect("failed reading jav_config.ws")
+}
+
+async fn world_list() -> String {
+    fs::read_to_string("world_list.ws").expect("failed reading world_list.ws")
 }
