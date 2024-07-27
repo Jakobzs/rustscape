@@ -42,3 +42,4 @@ axum = "0.6"
 mlua = { version = "0.8", features = ["lua54", "vendored"] }
 spin_sleep = "1"
 rs2-cache = "0.3"
+object = { version = "0.31", features = ["write"] }

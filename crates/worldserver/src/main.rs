@@ -33,7 +33,7 @@ fn main() -> Result<()> {
     let (mut lua, login_queue, _guard1, _guard2) = setup(223)?;
 
     // Create thread that spawns the tokio runtime and accepts connections
-    setup_login_acceptor(223, &login_queue);
+    setup_login_acceptor(223, &login_queue)?;
 
     loop {
         let start_time = Instant::now();
