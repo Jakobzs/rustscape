@@ -1,7 +1,3 @@
-fn main() {
-    println!("Hello, world!");
-}
-
 use anyhow::{anyhow, Result};
 use object::{
     coff::CoffHeader,
@@ -11,6 +7,10 @@ use object::{
 };
 use std::{ffi::CStr, io::Write};
 use tracing::trace;
+
+fn main() {
+    println!("Hello, world!");
+}
 
 fn replace_client_string(
     osclient: &mut Vec<u8>,
