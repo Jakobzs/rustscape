@@ -2,15 +2,18 @@ use crate::{input::input, render::render, setup::setup, update::update};
 use anyhow::Result;
 use crossbeam::queue::SegQueue;
 use mlua::Lua;
+use network::setup_login_acceptor;
 use std::{
     cmp,
     sync::{Arc, RwLock},
     thread,
     time::{Duration, Instant},
 };
+use tokio::{io::AsyncReadExt, net::TcpListener};
 
 mod config;
 mod input;
+mod network;
 mod render;
 mod setup;
 mod update;
@@ -26,19 +29,10 @@ pub struct LoginRequest {
 
 // The main thread is considered the game thread. Therefore, main is not async
 fn main() -> Result<()> {
-    let world = setup(223)?;
-
-    // Create mlua lua state
-    let lua = Lua::new();
-    lua.set_app_data(world);
+    let (mut lua, login_queue, _guard1, _guard2) = setup(223)?;
 
     // Create thread that spawns the tokio runtime and accepts connections
-    thread::spawn(|| {
-        tokio::runtime::Runtime::new().unwrap().block_on(async {
-            // Run the game loop
-            init_tokio().await;
-        });
-    });
+    setup_login_acceptor(223, &login_queue);
 
     loop {
         let start_time = Instant::now();
@@ -71,8 +65,4 @@ pub struct World {
     name: String,
     players: Vec<Player>,
     should_shutdown: bool,
-}
-
-async fn init_tokio() {
-    println!("Tokio here");
 }
