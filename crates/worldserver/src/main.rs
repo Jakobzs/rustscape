@@ -10,6 +10,7 @@ use std::{
     time::{Duration, Instant},
 };
 use tokio::{io::AsyncReadExt, net::TcpListener};
+use tracing::info;
 
 mod config;
 mod input;
@@ -48,7 +49,7 @@ fn main() -> Result<()> {
             break;
         }
 
-        println!("Tick took: {}ms", elapsed_time.as_millis());
+        info!("Tick took: {}ms", elapsed_time.as_millis());
 
         // Sleep until the next tick
         thread::sleep(Duration::from_millis(sleep_time));
