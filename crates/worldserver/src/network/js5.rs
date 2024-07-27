@@ -1,8 +1,11 @@
 use base64::{prelude::BASE64_STANDARD, Engine};
+use rs2cache::{js5_masterindex::Js5MasterIndex, Cache};
+use rscache::checksum;
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     net::TcpStream,
 };
+use tracing::info;
 
 pub async fn read_revision(
     revision: i32,
@@ -48,21 +51,36 @@ async fn handle_file_request(socket: &mut TcpStream /*cache: &std::sync::Arc<Cac
     // if requesting the meta index file
     if index_id == 255 && archive_id == 255 {
         // Decode base64 bytes
-        let  buf = BASE64_STANDARD.decode(b"/wD/AAAAALBrnoe0AAAAR/kdO7MAAAAz2nqgKQAAEPTnBuJ2AAAEbH+DFMoAAABjiYBd+gAAALlKzZiOAAAAHEjtevkAAAN/OmRqwwAAAYaKwB5WAAAABDiurLIAAAAPS5zmtwAAAAUfCR/7AAAIceeTIUUAAAAFocrL3QAAAArs6KO4AAAAAQAAAAAAAAAAp6yyNQAAAAGkcyDiAAABI4ToYFoAAAE/yndLKAAAAFkXxtzpAAAAQw==").unwrap();
-        socket.write_all(&buf).await.unwrap();
 
         /*
-        let checksum = Checksum::new(&cache).unwrap();
-        let encoded_checksum = checksum.encode().expect("failed encoding cache checksum");
+         let checksum = Checksum::new(&cache).unwrap();
+         let encoded_checksum = checksum.encode().expect("failed encoding cache checksum");
+        */
 
-        // bytebuffer for checksum
+        let mut encoded_checksum = Vec::new();
+        {
+            let cache = Cache::open("cache").unwrap();
+            let js5_masterindex = Js5MasterIndex::create(&cache.store);
+            encoded_checksum = js5_masterindex.write();
+        }
+
+        // Buffer for the checksum
         let mut checksum_buf = Vec::new();
         checksum_buf.write_u8(index_id).await.unwrap();
         checksum_buf.write_u16(archive_id).await.unwrap();
+
+        // Compression type
+        checksum_buf.write_u8(0).await.unwrap();
+
+        // Length of the checksum
+        checksum_buf
+            .write_u32(encoded_checksum.len() as u32)
+            .await
+            .unwrap();
+
         checksum_buf.write_all(&encoded_checksum).await.unwrap();
 
         socket.write_all(&checksum_buf).await.unwrap();
-        */
     }
     // if requesting a normal file
     else {
