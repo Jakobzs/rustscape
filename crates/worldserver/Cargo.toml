@@ -9,7 +9,6 @@ tokio = { workspace = true }
 notify = { workspace = true }
 tokio-postgres = { workspace = true }
 rusqlite = { workspace = true }
-rs-cache = { workspace = true }
 num = { workspace = true }
 extended-tea = { workspace = true }   # { path = "../xtea", version = "0.1" }
 rand_core = { workspace = true }
@@ -35,4 +34,3 @@ axum = { workspace = true }
 mlua = { workspace = true }
 spin_sleep = { workspace = true }
 rs2-cache = { workspace = true }
-base64 = "0.22"

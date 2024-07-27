@@ -1,16 +1,13 @@
-use base64::{prelude::BASE64_STANDARD, Engine};
 use rs2cache::{js5_masterindex::Js5MasterIndex, Cache};
-use rscache::checksum;
+use std::sync::Arc;
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     net::TcpStream,
+    sync::Mutex,
 };
 use tracing::info;
 
-pub async fn read_revision(
-    revision: i32,
-    socket: &mut TcpStream, /*, cache: std::sync::Arc<Cache>*/
-) {
+pub async fn read_revision(revision: i32, socket: &mut TcpStream, cache: Arc<Mutex<Cache>>) {
     let game_revision = socket.read_i32().await.unwrap();
     if game_revision != revision {
         return;
@@ -23,17 +20,17 @@ pub async fn read_revision(
 
     socket.write_i8(0).await.unwrap();
 
-    js5_loop(socket /* cache*/).await;
+    js5_loop(socket, cache).await;
 }
 
 // Main loop for reading JS5 packets
-async fn js5_loop(socket: &mut TcpStream /* , cache: std::sync::Arc<Cache>*/) {
+async fn js5_loop(socket: &mut TcpStream, cache: Arc<Mutex<Cache>>) {
     loop {
         let opcode = socket.read_u8().await;
 
         match opcode {
             Ok(opcode) => match opcode {
-                0 | 1 => handle_file_request(socket /* , &cache*/).await,
+                0 | 1 => handle_file_request(socket, &cache).await,
                 2 => handle_client_logged_in(socket).await,
                 3 => handle_client_logged_out(socket).await,
                 4 => handle_encryption_key_update(socket).await,
@@ -44,25 +41,15 @@ async fn js5_loop(socket: &mut TcpStream /* , cache: std::sync::Arc<Cache>*/) {
     }
 }
 
-async fn handle_file_request(socket: &mut TcpStream /*cache: &std::sync::Arc<Cache>*/) {
+async fn handle_file_request(socket: &mut TcpStream, cache: &Arc<Mutex<Cache>>) {
     let index_id = socket.read_u8().await.unwrap();
     let archive_id = socket.read_u16().await.unwrap();
 
     // if requesting the meta index file
     if index_id == 255 && archive_id == 255 {
-        // Decode base64 bytes
-
-        /*
-         let checksum = Checksum::new(&cache).unwrap();
-         let encoded_checksum = checksum.encode().expect("failed encoding cache checksum");
-        */
-
-        let mut encoded_checksum = Vec::new();
-        {
-            let cache = Cache::open("cache").unwrap();
-            let js5_masterindex = Js5MasterIndex::create(&cache.store);
-            encoded_checksum = js5_masterindex.write();
-        }
+        let cache_lock = cache.lock().await;
+        let js5_masterindex = Js5MasterIndex::create(&cache_lock.store);
+        let encoded_checksum = js5_masterindex.write();
 
         // Buffer for the checksum
         let mut checksum_buf = Vec::new();
@@ -84,8 +71,10 @@ async fn handle_file_request(socket: &mut TcpStream /*cache: &std::sync::Arc<Cac
     }
     // if requesting a normal file
     else {
-        /*
         let mut buf = cache
+            .lock()
+            .await
+            .store
             .read(index_id, archive_id as u32)
             .expect("failed to read file from cache");
 
@@ -124,7 +113,6 @@ async fn handle_file_request(socket: &mut TcpStream /*cache: &std::sync::Arc<Cac
         if let Err(e) = socket.write_all(&data).await {
             eprintln!("failed to write to socket; err = {:?}", e);
         }
-        */
     }
 }
 

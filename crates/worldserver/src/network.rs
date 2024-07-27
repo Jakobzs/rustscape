@@ -2,8 +2,9 @@ use crate::LoginRequest;
 use anyhow::Result;
 use axum::{routing::get, Router};
 use crossbeam::queue::SegQueue;
+use rs2cache::Cache;
 use std::{fs, net::SocketAddr, sync::Arc, thread};
-use tokio::{io::AsyncReadExt, net::TcpListener};
+use tokio::{io::AsyncReadExt, net::TcpListener, sync::Mutex};
 
 mod js5;
 mod login;
@@ -13,7 +14,7 @@ const JS5_SERVICE: u8 = 15;
 
 pub fn setup_login_acceptor(
     revision: i32,
-    //cache: Arc<Cache>,
+    cache: Arc<Mutex<Cache>>,
     //config: &Arc<Config>,
     login_queue: &Arc<SegQueue<LoginRequest>>,
     //world_player_status: &Arc<Mutex<WorldPlayerStatus>>,
@@ -26,7 +27,9 @@ pub fn setup_login_acceptor(
         tokio::runtime::Runtime::new().unwrap().block_on(async {
             setup_ws_server().unwrap();
 
-            accept_login_sockets(revision, &login_queue).await.unwrap();
+            accept_login_sockets(revision, cache, &login_queue)
+                .await
+                .unwrap();
         });
     });
 
@@ -35,7 +38,7 @@ pub fn setup_login_acceptor(
 
 async fn accept_login_sockets(
     revision: i32,
-    //cache: Arc<Cache>,
+    cache: Arc<Mutex<Cache>>,
     //config: Arc<Config>,
     login_queue: &Arc<SegQueue<LoginRequest>>,
     //world_player_status: &Arc<Mutex<WorldPlayerStatus>>,
@@ -45,7 +48,7 @@ async fn accept_login_sockets(
     loop {
         let (mut socket, _) = listener.accept().await?;
 
-        //let cache = cache.clone();
+        let cache = cache.clone();
         //let mut config = config.clone();
         let login_queue = login_queue.clone();
         //let world_player_status = world_player_status.clone();
@@ -69,7 +72,7 @@ async fn accept_login_sockets(
                         )
                         .await
                     }
-                    JS5_SERVICE => js5::read_revision(revision, &mut socket /* , cache*/).await,
+                    JS5_SERVICE => js5::read_revision(revision, &mut socket, cache).await,
                     _ => (),
                 }
             }

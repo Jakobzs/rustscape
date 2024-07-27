@@ -14,7 +14,7 @@ use std::{
     thread,
     time::{Duration, Instant},
 };
-use tokio::{io::AsyncReadExt, net::TcpListener};
+use tokio::{io::AsyncReadExt, net::TcpListener, sync::Mutex};
 use tracing::info;
 
 mod config;
@@ -37,14 +37,11 @@ pub struct LoginRequest {
 fn main() -> Result<()> {
     let (mut lua, login_queue, _guard1, _guard2) = setup(223)?;
 
-    /*
-    for x in checksum_table.entries {
-        info!("ChecksumTable entry: {:?}", x);
-    }
-    */
+    let cache = Cache::open("cache")?;
+    let cache_arc = Arc::new(Mutex::new(cache));
 
     // Prepare for socket connections
-    setup_login_acceptor(223, &login_queue)?;
+    setup_login_acceptor(223, cache_arc, &login_queue)?;
     info!("Ready to accept connections");
 
     info!("Game loop starting");
