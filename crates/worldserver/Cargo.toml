@@ -35,3 +35,4 @@ axum = { workspace = true }
 mlua = { workspace = true }
 spin_sleep = { workspace = true }
 rs2-cache = { workspace = true }
+base64 = "0.22"
