@@ -34,7 +34,9 @@ fn main() -> Result<()> {
 
     // Prepare for socket connections
     setup_login_acceptor(223, &login_queue)?;
+    info!("Ready to accept connections");
 
+    info!("Game loop starting");
     loop {
         let start_time = Instant::now();
 
@@ -48,8 +50,6 @@ fn main() -> Result<()> {
         if lua.app_data_ref::<World>().unwrap().should_shutdown {
             break;
         }
-
-        info!("Tick took: {}ms", elapsed_time.as_millis());
 
         // Sleep until the next tick
         thread::sleep(Duration::from_millis(sleep_time));
