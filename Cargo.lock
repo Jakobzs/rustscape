@@ -1547,7 +1547,7 @@ dependencies = [
 [[package]]
 name = "rs2-cache"
 version = "0.3.0"
-source = "git+https://github.com/osrs-rs/rs2-cache?branch=feat/checksumtable#b55f73e156500f91fb0e5539edde4194f64bacb9"
+source = "git+https://github.com/osrs-rs/rs2-cache?branch=feat/checksumtable#f10fd7d54f7c65049dd539ca9344edb6b1771f9f"
 dependencies = [
  "bzip2",
  "crc32fast",
