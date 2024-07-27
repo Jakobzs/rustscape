@@ -41,5 +41,5 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 axum = "0.6"
 mlua = { version = "0.8", features = ["lua54", "vendored"] }
 spin_sleep = "1"
-rs2-cache = "0.3"
+rs2-cache = { git = "https://github.com/osrs-rs/rs2-cache", branch = "feat/checksumtable" }
 object = { version = "0.31", features = ["write"] }
