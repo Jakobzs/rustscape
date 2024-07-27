@@ -34,13 +34,16 @@ fn main() -> Result<()> {
     let (mut lua, login_queue, _guard1, _guard2) = setup(223)?;
 
     // TODO: &store for rs2cache checksumtable, update the dep...
-    let cache = Cache::open("cache")?;
+    let mut cache = Cache::open("cache")?;
     let checksum_table = ChecksumTable::create(&cache.store)?;
 
     info!(
         "Amount of entries in checksum table: {}",
         checksum_table.entries.len()
     );
+
+    let testy = cache.read(255, 0, 0, None)?;
+    info!("255 data: {:?}", testy);
 
     /*
     for x in checksum_table.entries {
