@@ -1,8 +1,11 @@
 use crate::{input::input, render::render, setup::setup, update::update};
 use anyhow::Result;
+use crossbeam::queue::SegQueue;
 use mlua::Lua;
 use std::{
-    cmp, thread,
+    cmp,
+    sync::{Arc, RwLock},
+    thread,
     time::{Duration, Instant},
 };
 
@@ -13,6 +16,13 @@ mod setup;
 mod update;
 
 const TICK_RATE: i128 = 600;
+
+pub struct LoginRequest {
+    //auth_player_data: AuthenticatedPlayerData,
+    //client_packet_queue: Arc<SegQueue<ClientPacket>>,
+    //server_packet_queue: Arc<SegQueue<ServerPacket>>,
+    rw_lock_something: Arc<RwLock<bool>>,
+}
 
 // The main thread is considered the game thread. Therefore, main is not async
 fn main() -> Result<()> {

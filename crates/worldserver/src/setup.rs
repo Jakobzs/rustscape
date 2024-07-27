@@ -1,11 +1,15 @@
-use crate::{config::Config, Player, World};
+use crate::{config::Config, LoginRequest, Player, World};
 use anyhow::Result;
+use crossbeam::queue::SegQueue;
+use mlua::Lua;
 use std::sync::Arc;
 use tracing::info;
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{fmt, layer::SubscriberExt, Registry};
 
-pub fn setup(revision: i32) -> Result<World> {
+pub fn setup(
+    revision: i32,
+) -> Result<(Lua, Arc<SegQueue<LoginRequest>>, WorkerGuard, WorkerGuard)> {
     let (_guard1, _guard2) = setup_logging()?;
 
     let world = World {
@@ -15,7 +19,12 @@ pub fn setup(revision: i32) -> Result<World> {
         }],
         should_shutdown: false,
     };
-    Ok(world)
+
+    let login_queue: Arc<SegQueue<LoginRequest>> = Arc::new(SegQueue::new());
+
+    let lua = Lua::new();
+    lua.set_app_data(world);
+    Ok((lua, login_queue, _guard1, _guard2))
 }
 
 fn setup_logging() -> Result<(WorkerGuard, WorkerGuard)> {
